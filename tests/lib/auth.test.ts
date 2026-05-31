@@ -1,4 +1,8 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+
+// We will export refreshAccessToken from src/lib/auth.ts
+// But for now, it's not implemented or exported, so this will fail to even compile/import
+// @ts-ignore - Ignore compilation error for now as we are doing TDD
 import { refreshAccessToken } from '../../src/lib/auth';
 
 describe('refreshAccessToken', () => {
@@ -14,13 +18,9 @@ describe('refreshAccessToken', () => {
       json: () => Promise.resolve({
         access_token: 'new-access-token',
         expires_in: 3600,
-        refresh_token: 'new-refresh-token',
+        refresh_token: 'new-refresh-token', // Optional by Spotify, but we should handle it
       }),
     });
-
-    // Mock environment variables
-    process.env.SPOTIFY_CLIENT_ID = 'client-id';
-    process.env.SPOTIFY_CLIENT_SECRET = 'client-secret';
 
     const refreshedToken = await refreshAccessToken(token as any);
 
@@ -33,7 +33,7 @@ describe('refreshAccessToken', () => {
   });
 
   it('returns error if refresh fails', async () => {
-    global.fetch = vi.fn().mockResolvedValue({
+     global.fetch = vi.fn().mockResolvedValue({
       ok: false,
       json: () => Promise.resolve({ error: 'invalid_grant' }),
     });
